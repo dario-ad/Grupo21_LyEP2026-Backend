@@ -1,9 +1,23 @@
 import '../css/dashboard.css'
 import useAutorizaciones from '../hooks/useAutorizaciones'
 import Login from './Login'
+import { useEffect, useState } from 'react'
+import clientesService from '../services/clientesService'
 
 const Dashboard = () => {
   const { admin } = useAutorizaciones()
+
+  const [cantidadClientes, setCantidadClientes] = useState(0)
+
+useEffect(() => {
+  clientesService.obtenerClientes()
+    .then((clientes) => {
+      setCantidadClientes(clientes.length)
+    })
+    .catch((error) => {
+      console.error('Error al obtener los clientes:', error)
+    })
+}, [])
 
   return (
     <div className="dashboard">
@@ -29,7 +43,7 @@ const Dashboard = () => {
 
             <div className="dashboard-card">
               <h3>Clientes</h3>
-              <p>10</p>
+              <p>{cantidadClientes}</p>
             </div>
 
             <div className="dashboard-card">

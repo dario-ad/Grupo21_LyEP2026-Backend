@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL = "https://fakestoreapi.com/users";
+const URL = "http://localhost:3001/api/clientes";
 
 const crearCliente = async (cliente) => {
     const respuesta = await axios.post(URL, cliente);
