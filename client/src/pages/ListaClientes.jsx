@@ -1,120 +1,122 @@
-import "../css/listaclientes.css"
+import "../css/listaclientes.css";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FormCliente from "../components/FormCliente";
 import clientesService from "../services/clientesService";
 
 const ListaClientes = () => {
-  const [clientes, setClientes] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+    const [clientes, setClientes] = useState([]);
+    const [busqueda, setBusqueda] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-  useEffect(() => {
-   clientesService.obtenerClientes()
-      .then((data) => {
+    const cargarClientes = async (mostrarCarga = true) => {
+    try {
+        if (mostrarCarga) {
+            setLoading(true);
+        }
+
+        const data = await clientesService.obtenerClientes();
         setClientes(data);
-        setLoading(false);
-      })
-      .catch(() => {
+        setError(false);
+    } catch {
         setError(true);
-        setLoading(false);
-      });
-  }, []);
+    } finally {
+        if (mostrarCarga) {
+            setLoading(false);
+        }
+    }
+};
 
-  const clientesFiltrados = clientes.filter(
-    (cliente) =>
-      cliente.name.lastname
-        .toLowerCase()
-        .includes(busqueda.toLowerCase()) ||
-      cliente.address.city
-        .toLowerCase()
-        .includes(busqueda.toLowerCase())
-  );
+    useEffect(() => {
+        cargarClientes();
+    }, []);
 
-  if (loading) {
-    return <h2>Cargando clientes...</h2>;
-  }
+    const clientesFiltrados = clientes.filter((cliente) => {
+        const nombre = cliente.name.firstname || "";
+        const ciudad = cliente.address.city || "";
+        const termino = busqueda.toLowerCase();
 
-  if (error) {
-    return <h2>Error al cargar los clientes.</h2>;
-  }
+        return (
+            nombre.toLowerCase().includes(termino) ||
+            ciudad.toLowerCase().includes(termino)
+        );
+    });
 
-  return (
-    <div className="clientes-container">
+    if (loading) {
+        return <h2>Cargando clientes...</h2>;
+    }
 
-      <h1>Clientes</h1>
-      <FormCliente />
+    if (error) {
+        return <h2>Error al cargar los clientes.</h2>;
+    }
 
-      <hr />
+    return (
+        <div className="clientes-container">
+            <h1>Clientes</h1>
 
-      <div className="contenedor-buscador">
+            <FormCliente onClienteCreado={() => cargarClientes(false)} />
 
-        <h2 className="titulo-buscador">
-          Buscar Clientes
-        </h2>
+            <hr />
 
-        <input
-          className="buscador"
-          type="text"
-          placeholder="Buscar por apellido o ciudad"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
+            <div className="contenedor-buscador">
+                <h2 className="titulo-buscador">Buscar Clientes</h2>
 
-        <p className="cantidad-clientes">
-          Clientes encontrados: {clientesFiltrados.length}
-        </p>
+                <input
+                    className="buscador"
+                    type="text"
+                    placeholder="Buscar por nombre o ciudad"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                />
 
-      </div>
-      <table className="tabla-clientes">
+                <p className="cantidad-clientes">
+                    Clientes encontrados: {clientesFiltrados.length}
+                </p>
+            </div>
 
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Ciudad</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+            <table className="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre completo</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Ciudad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
 
-        <tbody>
+                <tbody>
+                    {clientesFiltrados.map((cliente) => (
+                        <tr key={cliente._id}>
+                            <td>{cliente._id}</td>
+                            <td>{cliente.name.firstname}</td>
+                            <td>{cliente.email}</td>
+                            <td>{cliente.phone}</td>
+                            <td>{cliente.address.city}</td>
+                            <td>
+                                <Link
+                                    className="btn-ficha"
+                                    to={`/clientes/${cliente._id}`}
+                                >
+                                    Ver Ficha Completa
+                                </Link>
+                            </td>
+                        </tr>
+                    ))}
 
-          {clientesFiltrados.map((cliente) => (
-            <tr key={cliente.id}>
-
-              <td>{cliente.id}</td>
-
-              <td>
-                {cliente.name.firstname} {cliente.name.lastname}
-              </td>
-
-              <td>{cliente.email}</td>
-
-              <td>{cliente.phone}</td>
-
-              <td>{cliente.address.city}</td>
-
-              <td>
-                <Link
-                  className="btn-ficha"
-                  to={`/clientes/${cliente.id}`}
-                >
-                  Ver Ficha Completa
-                </Link>
-              </td>
-
-            </tr>
-          ))}
-
-        </tbody>
-
-      </table>
-
-    </div>
-  );
+                    {clientesFiltrados.length === 0 && (
+                        <tr>
+                            <td colSpan="6">
+                                No se encontraron clientes.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
 export default ListaClientes;
