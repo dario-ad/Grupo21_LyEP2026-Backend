@@ -6,7 +6,7 @@ const AutorizacionesProvider = ({ children }) => {
 
   const [admin, setAdmin] = useState(()=>{
     const adminGuardado= localStorage.getItem('admin')
-    if(adminGuardado){
+    if(adminGuardado && sessionStorage.getItem('token')){
       return JSON.parse(adminGuardado)
     }
     return null
@@ -22,9 +22,13 @@ useEffect(()=>{
   }
 
 },[admin])
+
 const cerrarSesion=()=>{
-  setAdmin(null)
+  sessionStorage.removeItem('token')
+  localStorage.removeItem('role')
+    setAdmin(null)
 }
+
 return (
     <AutorizacionesContext.Provider
       value={{ admin, setAdmin, cerrarSesion }}
