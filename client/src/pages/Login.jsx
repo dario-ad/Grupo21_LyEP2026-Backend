@@ -36,26 +36,33 @@ const Login = () => {
     setErrores(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }
-  const manejarSubmit = (e) => {
+  const manejarSubmit = async (e) => {
     e.preventDefault()
     if (!validar()) return
-    const usuario = AutorizacionesService.login(
-      email,
-      password,
-      sector
-    )
-    if (!usuario) {
-     alert('Verifique los datos')
-      return
+    try {
+      const usuario = await AutorizacionesService.login(
+        email,
+        password,
+        sector
+      )
+      localStorage.setItem("role", usuario.sector)
+      setAdmin({
+        nombre: usuario.nombre,
+        email: usuario.email,
+        sector: usuario.sector
+      })
+      navigate('/')
+    } catch (error) {
+      if (!error.response) {
+        alert('No se pudo conectar con el servidor')
+      } else if (error.response.status === 403) {
+        alert('La cuenta está desactivada')
+      } else {
+        alert('Verifique los datos')
+      }
     }
-    localStorage.setItem("role", usuario.sector)
-    setAdmin({
-      nombre: usuario.nombre,
-      email: usuario.email,
-      sector: usuario.sector
-    })
-    navigate('/')
   }
+
   return (
     <div className="login-container">
       <h1>Iniciar Sesión</h1>

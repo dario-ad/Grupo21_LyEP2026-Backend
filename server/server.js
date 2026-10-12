@@ -10,6 +10,8 @@ import cors from "cors";
 
 import clientesRoutes from "./routes/clientesRoutes.js"
 
+import authRoutes from "./routes/authRoutes.js"
+
 const app = express();
 
 app.use(express.json());
@@ -33,6 +35,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/clientes", clientesRoutes);
 
+//Rutas de autenticacion
+app.use("/api/auth", authRoutes);
 
 const PORT = 3001;
 
